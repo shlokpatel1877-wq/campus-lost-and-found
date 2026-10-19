@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Campus Lost and Found - A central hub to report, search, and reclaim lost or found items on campus.">
+  <title>Campus Lost & Found</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Fonts for crisp modern typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- App Header / Navigation -->
+  <header class="app-header">
+    <div class="header-inner container">
+      <div class="brand">
+        <div class="brand-icon">
+          <!-- Compass / Search SVG Icon -->
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">Campus Lost & Found</h1>
+          <p class="brand-subtitle">Student & Staff Community Recovery Hub</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="toggle-form-btn" class="btn btn-primary" type="button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Report Item</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-content">
+    
+    <!-- Backend Connection Error Banner (hidden by default) -->
+    <div id="connection-error" class="alert-banner alert-danger hidden" role="alert">
+      <div class="alert-content">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span id="connection-error-msg">Backend API is currently unreachable. Make sure the server is running on port 5000.</span>
+      </div>
+      <button id="retry-btn" class="btn btn-sm btn-outline">Retry</button>
+    </div>
+
+    <!-- 1. DASHBOARD / METRICS SECTION -->
+    <section class="dashboard-section" aria-label="Statistics Dashboard">
+      <div class="stats-grid">
+        <div class="stat-card stat-total">
+          <div class="stat-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Total Reports</span>
+            <span id="stat-total-count" class="stat-number">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-lost">
+          <div class="stat-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Lost Items</span>
+            <span id="stat-lost-count" class="stat-number">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card stat-found">
+          <div class="stat-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Found Items</span>
+            <span id="stat-found-count" class="stat-number">0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. REPORT AN ITEM FORM (Collapsible / Toggleable) -->
+    <section id="report-section" class="report-section card">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Report an Item</h2>
+          <p class="section-desc">Submit a detailed report to help match lost items with their owners.</p>
+        </div>
+        <button id="close-form-btn" class="btn-icon" aria-label="Close form">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form id="report-item-form" novalidate>
+        <!-- Type Selection: Lost vs Found -->
+        <div class="form-group">
+          <label class="form-label">Report Type <span class="required">*</span></label>
+          <div class="radio-pill-group">
+            <label class="radio-pill">
+              <input type="radio" name="type" value="lost" checked>
+              <span class="radio-pill-content pill-lost">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="15" y1="9" x2="9" y2="15"></line>
+                  <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                I Lost An Item
+              </span>
+            </label>
+            <label class="radio-pill">
+              <input type="radio" name="type" value="found">
+              <span class="radio-pill-content pill-found">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                I Found An Item
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <!-- Title / Item Name -->
+          <div class="form-group">
+            <label for="item-title" class="form-label">Item Title / Name <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="item-title" 
+              name="title" 
+              class="form-control" 
+              placeholder="e.g. Silver MacBook Pro 14-inch" 
+              required
+              minlength="2"
+              maxlength="100"
+            >
+            <span class="field-error" id="error-title"></span>
+          </div>
+
+          <!-- Category -->
+          <div class="form-group">
+            <label for="item-category" class="form-label">Category <span class="required">*</span></label>
+            <select id="item-category" name="category" class="form-control" required>
+              <option value="" disabled selected>Select category...</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Books & Stationery">Books & Stationery</option>
+              <option value="ID & Cards">ID & Cards</option>
+              <option value="Clothing & Accessories">Clothing & Accessories</option>
+              <option value="Keys">Keys</option>
+              <option value="Bags & Backpacks">Bags & Backpacks</option>
+              <option value="Other">Other</option>
+            </select>
+            <span class="field-error" id="error-category"></span>
+          </div>
+
+          <!-- Campus Location -->
+          <div class="form-group">
+            <label for="item-location" class="form-label">Campus Location <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="item-location" 
+              name="location" 
+              class="form-control" 
+              placeholder="e.g. Science Library 2nd Floor, Table 12" 
+              required
+              maxlength="100"
+            >
+            <span class="field-error" id="error-location"></span>
+          </div>
+
+          <!-- Date Lost or Found -->
+          <div class="form-group">
+            <label for="item-date" class="form-label">Date Lost or Found</label>
+            <input 
+              type="date" 
+              id="item-date" 
+              name="date" 
+              class="form-control"
+            >
+            <span class="field-error" id="error-date"></span>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label for="item-desc" class="form-label">Detailed Description <span class="required">*</span></label>
+          <textarea 
+            id="item-desc" 
+            name="description" 
+            rows="3" 
+            class="form-control" 
+            placeholder="Include color, brand, distinct scratches, keychains, stickers, or specific contents..."
+            required
+            maxlength="1000"
+          ></textarea>
+          <span class="field-error" id="error-description"></span>
+        </div>
+
+        <!-- Contact Information Fields -->
+        <div class="form-divider">
+          <span>Reporter Contact Information</span>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="contact-name" class="form-label">Your Full Name <span class="required">*</span></label>
+            <input 
+              type="text" 
+              id="contact-name" 
+              name="contactName" 
+              class="form-control" 
+              placeholder="e.g. Alex Johnson" 
+              required
+            >
+            <span class="field-error" id="error-contactName"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="contact-email" class="form-label">Campus Email <span class="required">*</span></label>
+            <input 
+              type="email" 
+              id="contact-email" 
+              name="contactEmail" 
+              class="form-control" 
+              placeholder="e.g. alex.j@campus.edu" 
+              required
+            >
+            <span class="field-error" id="error-contactEmail"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="contact-phone" class="form-label">Phone Number <span class="optional">(Optional)</span></label>
+            <input 
+              type="tel" 
+              id="contact-phone" 
+              name="contactPhone" 
+              class="form-control" 
+              placeholder="e.g. 555-0199"
+            >
+            <span class="field-error" id="error-contactPhone"></span>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button type="button" id="cancel-form-btn" class="btn btn-outline">Cancel</button>
+          <button type="submit" id="submit-form-btn" class="btn btn-primary">
+            <span class="btn-text">Submit Report</span>
+            <span class="btn-spinner hidden"></span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 3. SEARCH & FILTER CONTROLS -->
+    <section class="filters-card card" aria-label="Search and Filter Controls">
+      <div class="filters-header">
+        <div class="search-input-wrapper">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input 
+            type="text" 
+            id="filter-search" 
+            class="form-control search-input" 
+            placeholder="Search items by name, keywords, or description..."
+            autocomplete="off"
+          >
+          <button id="clear-search-btn" class="clear-search-btn hidden" title="Clear search">✕</button>
+        </div>
+      </div>
+
+      <div class="filters-row">
+        <!-- Type Filter -->
+        <div class="filter-item">
+          <label for="filter-type" class="filter-label">Item Type</label>
+          <select id="filter-type" class="form-control form-control-sm">
+            <option value="">All Types</option>
+            <option value="lost">Lost Items Only</option>
+            <option value="found">Found Items Only</option>
+          </select>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="filter-item">
+          <label for="filter-category" class="filter-label">Category</label>
+          <select id="filter-category" class="form-control form-control-sm">
+            <option value="">All Categories</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Books & Stationery">Books & Stationery</option>
+            <option value="ID & Cards">ID & Cards</option>
+            <option value="Clothing & Accessories">Clothing & Accessories</option>
+            <option value="Keys">Keys</option>
+            <option value="Bags & Backpacks">Bags & Backpacks</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <!-- Location Filter -->
+        <div class="filter-item">
+          <label for="filter-location" class="filter-label">Location</label>
+          <input 
+            type="text" 
+            id="filter-location" 
+            class="form-control form-control-sm" 
+            placeholder="e.g. Library, Gym..."
+          >
+        </div>
+
+        <!-- Status Filter -->
+        <div class="filter-item">
+          <label for="filter-status" class="filter-label">Status</label>
+          <select id="filter-status" class="form-control form-control-sm">
+            <option value="">All Statuses</option>
+            <option value="open">Open</option>
+            <option value="claimed">Claimed</option>
+            <option value="resolved">Resolved</option>
+          </select>
+        </div>
+
+        <!-- Reset Button -->
+        <div class="filter-actions">
+          <button id="reset-filters-btn" class="btn btn-outline btn-sm" type="button" title="Clear all search filters">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+              <path d="M3 3v5h5"></path>
+            </svg>
+            <span>Reset Filters</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ITEM LISTING SECTION -->
+    <section class="items-section" aria-label="Item Reports">
+      <div class="items-header">
+        <h2 class="items-title">Recent Reports</h2>
+        <span id="items-count-badge" class="badge badge-neutral">Loading...</span>
+      </div>
+
+      <!-- Loading State Spinner -->
+      <div id="loading-indicator" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading items from campus database...</p>
+      </div>
+
+      <!-- Empty State (No items found) -->
+      <div id="empty-state" class="empty-state hidden">
+        <div class="empty-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <line x1="8" y1="11" x2="14" y2="11"></line>
+          </svg>
+        </div>
+        <h3 id="empty-title">No items found</h3>
+        <p id="empty-message">Try adjusting your search terms or clearing the active filters.</p>
+        <button id="empty-reset-btn" class="btn btn-outline btn-sm">Reset Filters</button>
+      </div>
+
+      <!-- Dynamic Item Cards Grid -->
+      <div id="items-grid" class="items-grid"></div>
+    </section>
+
+  </main>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="delete-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-danger-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <div>
+          <h3 id="modal-title" class="modal-title">Delete Item Report</h3>
+          <p class="modal-subtitle">Are you sure you want to delete this report? This action cannot be undone.</p>
+        </div>
+      </div>
+      <div class="modal-item-preview">
+        <strong id="delete-item-title">Item Title</strong>
+      </div>
+      <div class="modal-actions">
+        <button id="cancel-delete-btn" class="btn btn-outline" type="button">Cancel</button>
+        <button id="confirm-delete-btn" class="btn btn-danger" type="button">
+          <span class="btn-text">Delete Report</span>
+          <span class="btn-spinner hidden"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <div class="container footer-content">
+      <p>Campus Lost & Found &bull; Built with Node.js, Express, MongoDB, & Vanilla JS</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
