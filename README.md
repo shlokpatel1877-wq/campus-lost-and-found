@@ -27,4 +27,4 @@ A full-stack web application that helps students report lost items and find item
 1. Clone the repository:
 
    ```bash
-   git clone YOUR_REPOSITORY_URL
+  git clone https://github.com/shlokpatel1877-wq/campus-lost-and-found.git
